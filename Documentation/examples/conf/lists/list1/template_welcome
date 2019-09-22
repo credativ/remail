@@ -1,0 +1,26 @@
+Subject: Welcome to the list1 mailing-list
+User-Agent: Remail
+Content-Type: text/plain
+Content-Disposition: inline
+
+Dear $NAME!
+
+This is an automated email from your friendly mailing-list update bot. This
+email is sent to you because you got (re-)subscribed to the list1
+mailing-list.
+
+This email to you is signed either with the list's PGP key or the list's
+S/MIME certificate depending on your encryption preference, so your
+email-client should have already retrieved the PGP key or the S/MIME
+certificate for you.
+
+The list's email address is: list1@list.domain
+
+To send email to the list, encrypt it either with the list's PGP key or the
+list's S/MIME certificate. Note, that the subject line of the email is not
+encrypted, so you should be careful about that.
+
+If you have questions, please contact the list administrator by email. The
+administrators email address is: list1-owner@list.domain
+
+

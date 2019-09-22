@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright Thomas Gleixner <tglx@linutronix.de>
+#
+
+from remail.utils import logger
+from remail.version import __version__
+from remail.remaild import remaild
+from remail.maillist import maillist_checker
+
+from argparse import ArgumentParser
+
+import sys
+import os
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description='remail daemon')
+    parser.add_argument('config', help='Config file')
+    parser.add_argument('--enabled', '-e', dest='enabled', action='store_true',
+                        help='Show alist of enabled accounts. Implies -lnq')
+    parser.add_argument('--list', '-l', dest='islist', action='store_true',
+                        help='List configuration check')
+    parser.add_argument('--nokeys', '-n', dest='nokeys', action='store_true',
+                        help='Do not check keys')
+    parser.add_argument('--quiet', '-q', dest='quiet', action='store_true',
+                        help='Quiet mode. Do not output the parsed config')
+    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
+                        help='Verbose logging')
+    parser.add_argument('--version', '-V', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
+    args = parser.parse_args()
+
+    if args.enabled:
+        args.islist = True
+        args.quiet = True
+        args.nokeys = True
+
+    logger = logger(use_syslog=False, verbose=args.verbose)
+
+    # Change into the directory in which the config file resides
+    wdir = os.path.dirname(args.config)
+    if len(wdir):
+        os.chdir(wdir)
+        args.config = os.path.basename(args.config)
+
+    try:
+        if not args.islist:
+            rd = remaild(args.config, logger)
+        else:
+            rd = maillist_checker(args.config, logger)
+    except Exception as ex:
+        '''
+        Exceptions which reach here are fatal
+        '''
+        logger.log_exception('', ex)
+        sys.exit(11)
+
+    try:
+        if not args.quiet:
+            rd.show_config()
+        if not args.nokeys:
+            rd.check_keys()
+        if args.enabled:
+            rd.show_enabled()
+        res = 0
+    except Exception as ex:
+        '''
+        Exceptions which reach here are fatal
+        '''
+        logger.log_exception('', ex)
+        res = 12
+
+    sys.exit(res)
+

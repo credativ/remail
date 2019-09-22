@@ -1,0 +1,116 @@
+#
+# Remail base configuration file for the remail list server
+#
+# Note: YAML requires spaces. Do not use TABs
+#
+
+# Enabled. If False all other items are ignored. Set to true to get it starting
+enabled: True
+
+# Set to True to enable SMTP delivery. Set only to False for testing or
+# troubleshooting
+use_smtp: True
+
+# S/MIME
+smime:
+ # Verify CA certs. Only disable for troubleshooting
+ verify:        True
+
+# GPG
+gpg:
+ # Trust your keys always. That avoids manual fiddling with trust-db
+ always_trust:  True
+ # List mail should always be signed with the lists key
+ sign:          True
+
+# The mailing lists
+lists:
+
+ # The list name
+ list1:
+ 
+  # Set to True if the list is enabled
+  enabled:      True
+
+  # Set to True if the list should be moderated
+  # If set, only subscribers can post to the list
+  # Non subscriber mails are forwarded to the list admins
+  moderated:    True
+
+  archive:
+   use_maildir:        True
+   # Set to true if the incoming mails should be archived
+   # locally in a mailbox/dir unmodified before decryption
+   archive_incoming:   True
+   # Set to true if the incoming mails should be archived
+   # locally in a mailbox/dir after decrypting them
+   archive_plain:      True
+
+  # The list account itself
+  listaccount:
+   list1@list.domain:
+    name:          list1
+    fingerprint:   40_CHARACTER_PGP_FINGERPRINT
+
+  # The list admins
+  admins:
+   # Format:
+   #  email address:
+   #   name: Real name of the subscriber
+   #   enabled: Subscriber is enabled (if omitted defaults to False)
+   #   use_smime: True/False (Use S/MIME for encryption. If omitted defaults to False)
+   #   fingerprint: GPG fingerprint (Not required when use_smime == True)
+   #   gpg_plain: Plain text inline GPG encryption (If omitted defaults to False)
+   admin1@admin.domain:
+    name:          Admin one
+    use_smime:     True
+    enabled:       True
+
+   admin2@admin2.domain:
+    name:          Admin2
+    fingerprint:  40_CHARACTER_PGP_FINGERPRINT
+    gpg_plain:     True
+    enabled:       True
+
+ # The list name
+ list2:
+  # Set to True if the list is enabled
+  enabled:      True
+
+  # Set to True if the list should be moderated
+  # If set, only subscribers can post to the list
+  # Non subscriber mails are forwarded to the list admins
+  moderated:    True
+
+  archive:
+   use_maildir:        True
+   # Set to true if the incoming mails should be archived
+   # locally in a mailbox/dir unmodified before decryption
+   archive_incoming:   True
+   # Set to true if the incoming mails should be archived
+   # locally in a mailbox/dir after decrypting them
+   archive_plain:      False
+
+  # The list account itself
+  listaccount:
+   list1@list.domain:
+    name:          list1
+    fingerprint:   40_CHARACTER_PGP_FINGERPRINT
+
+  # The list admins
+  admins:
+   # Format:
+   #  email address:
+   #   name: Real name of the subscriber
+   #   enabled: Subscriber is enabled (if omitted defaults to False)
+   #   use_smime: True/False (Use S/MIME for encryption. If omitted defaults to False)
+   #   fingerprint: GPG fingerprint (Not required when use_smime == True)
+   #   gpg_plain: Plain text inline GPG encryption (If omitted defaults to False)
+   admin2@admin2.domain:
+    name:          Admin2
+    fingerprint:  40_CHARACTER_PGP_FINGERPRINT
+    enabled:       True
+
+   admin3@admin3.domain:
+    name:          Admin three
+    enabled:       False

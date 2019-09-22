@@ -1,0 +1,41 @@
+#
+# Recrypting mailing list configuration file for list1
+#
+
+# The list subscribers
+subscribers:
+ 
+ # Format:
+ #  email address:
+ #   name: Real name of the subscriber
+ #   enabled: Subscriber is enabled (if omitted defaults to False)
+ #   use_smime: True/False (Use S/MIME for encryption. If omitted defaults to False)
+ #   fingerprint: GPG fingerprint (Not required when use_smime == True)
+ #   gpg_plain: Plain text inline GPG encryption (If omitted defaults to False)
+ #   aliases: List of alias addresses which are valid for posting (moderated list)
+ #
+ # Note: Use spaces for spacing not tabs
+
+ dev1@some.domain:
+  name:         Developer One
+  enabled:      True
+  use_smime:    True
+
+ dev2@some.domain:
+  name:         Developer Two
+  enabled:      False
+
+ dev3@other.domain:
+  name:         Developer Three
+  enabled:      True
+  fingerprint:  40_CHARACTER_PGP_FINGERPRINT
+  aliases:
+   - dev3@dev3.domain
+   - hckr@dev3.domain
+
+ dev4@other.domain:
+  name:         Developer Four
+  enabled:      True
+  fingerprint:  40_CHARACTER_PGP_FINGERPRINT
+  gpg_plain:    True
+

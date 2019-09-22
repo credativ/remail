@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-only
+# Copyright Thomas Gleixner <tglx@linutronix.de>
+#
+
+from remail.utils import logger
+from remail.version import __version__
+from remail.remaild import remaild
+
+from argparse import ArgumentParser
+
+import sys
+import os
+
+def exit_daemon(logger, res):
+    logger.log('Stopped\n')
+    sys.exit(res)
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description='remail daemon')
+    parser.add_argument('config', help='Config file')
+    parser.add_argument('--syslog', '-s', dest='syslog', action='store_true',
+                        help='Use syslog for logging. Default is stderr')
+    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
+                        help='Verbose logging')
+    parser.add_argument('--version', '-V', action='version',
+                        version='%(prog)s {version}'.format(version=__version__))
+    args = parser.parse_args()
+
+    logger = logger(use_syslog=args.syslog, verbose=args.verbose)
+    logger.log("Started\n")
+
+    # Change into the directory in which the config file resides
+    wdir = os.path.dirname(args.config)
+    if len(wdir):
+        os.chdir(wdir)
+        args.config = os.path.basename(args.config)
+
+    try:
+        rd = remaild(args.config, logger)
+    except Exception as ex:
+        '''
+        Exceptions which reach here are fatal
+        '''
+        logger.log_exception('', ex, verbose=True)
+        exit_daemon(logger, 11)
+
+    try:
+        res = rd.run()
+    except Exception as ex:
+        '''
+        Exceptions which reach here are fatal
+        '''
+        logger.log_exception('', ex, verbose=True)
+        res = 12
+
+    exit_daemon(logger, res)
