@@ -1,0 +1,12 @@
+Non-comprehensive todo list:
+
+- Add Python setup.py
+
+- Add Debian/RPM packaging
+
+- Write a proper service file
+
+- Mail command processing (FREEZE/UNFREEZE of subscribers, UNFREEZE of
+  frozen messages). Most of the code is already available, I just need
+  to find the time to clean it up and move it over from the old python2
+  based version which served us well for more than a year.

@@ -1,0 +1,13 @@
+[Unit]
+Description=remail server
+After=syslog.target network.target
+ConditionPathExists=/home/remail/remail/remail.yaml
+
+[Service]
+Type=simple
+User=remail
+WorkDir=~/remail
+ExecStart=/usr/bin/remail_daemon -v /home/remail/remail/remail.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+[Install]
+WantedBy=default.target
