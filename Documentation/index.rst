@@ -71,7 +71,7 @@ Usage guidelines (man pages)
 
    man1/remail_daemon.rst
    man1/remail_chkcfg.rst
-   man5/remail_daemon.config.rst
+   man5/remail.config.rst
   
 
 Indices and tables

@@ -55,4 +55,4 @@ documentation.
 
 See also
 --------
-:manpage:`remail_daemon.config(5)`
+:manpage:`remail.config(5)`
