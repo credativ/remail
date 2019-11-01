@@ -7,7 +7,7 @@ from remail.config import RemailConfigException
 from remail.config import main_config
 from remail.maillist import maillist
 
-from email import message_from_binary_file
+from email import message_from_binary_file, message_from_file
 from email.policy import EmailPolicy
 from ruamel.yaml import YAML
 import pyinotify
@@ -15,6 +15,7 @@ import mailbox
 import pathlib
 import signal
 import fcntl
+import sys
 import os
 
 class EventHandler(pyinotify.ProcessEvent):
@@ -173,6 +174,25 @@ class remaild(object):
         except:
             pass
 
+
+    def process_msg(self, msg):
+        # Check whether one of the lists will take it
+        for ml in self.mailinglists:
+            if not ml.enabled:
+                continue
+            dest = ml.get_destination(msg)
+            if not dest:
+                continue
+            try:
+                if ml.process_mail(msg, dest):
+                    return 0
+                return 2
+            except Exception as ex:
+                txt = 'Failed to process mail file %s\n' %(mailfile)
+                self.logger.log_exception(txt, ex)
+                break
+        return 1
+
     # The actual mail processing
     def process_mail(self, queue):
         '''
@@ -193,24 +213,9 @@ class remaild(object):
                 self.logger.log_exception(txt, ex)
                 continue
 
-            # Check whether one of the lists will take it
-            processed = False
-            for ml in self.mailinglists:
-                if not ml.enabled:
-                    continue
-                dest = ml.get_destination(msg)
-                if not dest:
-                    continue
-                try:
-                    processed = ml.process_mail(msg, dest)
-                    break
-                except Exception as ex:
-                    self.failedmails.append(mailfile)
-                    txt = 'Failed to process mail file %s\n' %(mailfile)
-                    self.logger.log_exception(txt, ex)
-                    break
+            res = self.process_msg(msg)
 
-            if processed:
+            if res == 0:
                 os.unlink(mailfile)
             else:
                 self.move_frozen(mailfile)
@@ -359,6 +364,17 @@ class remaild(object):
                 self.reconfigure()
 
         return self.should_stop()
+
+    # The pipe handling interface
+    def handle_pipe(self):
+        self._should_reload = True
+        self.reconfigure()
+
+        if not self.enabled:
+            return 1
+
+        msg = message_from_file(sys.stdin)
+        return self.process_msg(msg)
 
     # The runner
     def run(self):

@@ -38,7 +38,7 @@ Configuration directory structure
 
 The configuration directory structure is fixed and looks like this::
 
-    ├── .certs
+  ├── .certs
   │   ├── cacert.pem
   │   ├── list1@your.domain.key
   │   ├── list2@your.domain.key
@@ -427,4 +427,5 @@ See also
 --------
 :manpage:`remail_daemon(1)`
 :manpage:`remail_chkcfg(1)`
+:manpage:`remail_pipe(1)`
 

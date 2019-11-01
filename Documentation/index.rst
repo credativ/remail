@@ -70,6 +70,7 @@ Usage guidelines (man pages)
    :maxdepth: 3
 
    man1/remail_daemon.rst
+   man1/remail_pipe.rst
    man1/remail_chkcfg.rst
    man5/remail.config.rst
   

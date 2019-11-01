@@ -1,20 +1,21 @@
 .. SPDX-License-Identifier: GPL-2.0
 
-.. _remail_daemon_man:
+.. _remail_pipe_man:
 
-remail_daemon manual page
+remail_pipe manual page
 =========================
 
 Synopsis
 --------
 
-**remail_daemon** [*options*] config_file
+**remail_pipe** [*options*] config_file
 
 Description
 -----------
 
-:program:`remail_daemon`, The daemon for running an encrypted mailing
-list. The configuration file name is handed in as command line argument.
+:program:`remail_pipe`, The pipe script for decrypting incoming mail and
+sending it re-encrypted to the subscribers of an encrypted mailing
+list. The incoming mail is read from stdin.
 
 
 Options
@@ -36,7 +37,7 @@ Options
 Configuration file
 ------------------
 
-remail_daemon reads the configuration file which was handed in as command
+remail_pipe reads the configuration file which was handed in as command
 line argument.  The configuration file is a simple yaml file. Non-mandatory
 configuration options which are not in the configuration file are set to
 the default values.
@@ -47,11 +48,26 @@ See the configuration file man page for detailed information.
 Work directory
 --------------
 
-remail daemon assumes that the configuration file is in the work directory
+remail pipe assumes that the configuration file is in the work directory
 which has a defined layout and content. The directory structure is
 documented in the full remail documentation along with hints how to manage
-documentation.
+encrypted mailing lists.
 
+Exit codes
+----------
+
+.. list-table::
+
+   * - 0
+     - Mail was successfully delivered
+   * - 1
+     - No enabled mailinglist found for delivery
+   * - 2
+     - Mail processing incomplete. See log output
+   * - 11
+     - Configuration error
+   * - 12
+     - Fatal exception
 
 See also
 --------
