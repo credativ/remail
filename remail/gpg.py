@@ -25,6 +25,7 @@ class gpg_crypt(object):
         self.config = gpgcfg
         self.account = account
         self.gpg = gnupg.GPG(gnupghome=self.config.home,
+                             gpgbinary=self.config.gpgbinary,
                              keyring=self.config.keyring)
         self.keys = self.gpg.list_keys()
 

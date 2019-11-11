@@ -211,6 +211,7 @@ class smime_config(object):
 gpg_defaults = {
     'always_trust'     : True,
     'sign'             : True,
+    'gpgbinary'        : 'gpg',
 }
 
 class gpg_config(object):

@@ -211,6 +211,7 @@ GPG options:
      gpg:
       always_trust:        True
       sign:                True
+      gpgbinary:           gpg
 
   always_trust:
 
@@ -227,6 +228,10 @@ GPG options:
    default as this is the recommended way to send GPG mail. If disabled then
    the public key of the list is not part of the welcome message which is
    sent to new recipients.
+
+  gpgbinary:
+
+   Path to the GnuPG binary to use, defaults to "gpg".
 
 The mailing lists collection:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
