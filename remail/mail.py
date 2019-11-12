@@ -197,11 +197,16 @@ def msg_force_msg_id(msg, name):
         id = make_msgid(name.split('@')[0])
         msg_set_header(msg, 'Message-ID', id)
 
+re_rmlfcr = re.compile('[\r\n]')
 
 def msg_set_header(msg, hdr, txt):
     '''
     Set new or replace a message header
     '''
+    # Sanitize the header first. Broken Outlook GPG payloads
+    # come with wreckaged headers.
+    txt = re_rmlfcr.sub(' ', txt)
+
     for k in msg.keys():
         if hdr.lower() == k.lower():
             msg.replace_header(k, txt)
