@@ -373,7 +373,8 @@ class remaild(object):
         if not self.enabled:
             return 1
 
-        msg = message_from_file(sys.stdin)
+        policy = EmailPolicy(utf8=True)
+        msg = message_from_file(sys.stdin, policy=policy)
         return self.process_msg(msg)
 
     # The runner
