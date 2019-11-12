@@ -364,26 +364,40 @@ def msg_sanitize_outlook(msg):
     if ct != 'multipart/mixed':
         return
 
-    # The bogus outlook mails consist of a text/plain and an attachment
-    payload = msg.get_payload()
-    if len(payload) != 2:
-        return
+    # Try to find the payload part which actually contains the
+    # magically wrapped outlook GPG data.
+    # Two variants:
+    # 1) msg.asc or msc.gpg provided as a plain attachement
+    #    without PGP envelope
+    # 2) GpgOL_MIME_structure.txt contains a fully enveloped
+    #   PGP payload with the proper headers.
+    # Of course everything can be base64 encoded as well...
+    for payload in msg.get_payload():
+        try:
+            if payload.get_content_type() != 'application/octet-stream':
+                continue
 
-    if payload[0].get_content_type() != 'text/plain':
-        return
+            fname = payload.get_filename(None)
+            if fname not in ['msg.gpg', 'msg.asc', 'GpgOL_MIME_structure.txt']:
+                continue
 
-    if payload[1].get_content_type() != 'application/octet-stream':
-        return
-
-    fname = payload[1].get_filename(None)
-    if not fname:
-        return
-
-    if fname not in ['msg.gpg', 'msg.asc', 'GpgOL_MIME_structure.txt']:
-        return
-
-    encpl = payload[1].get_payload()
-    msg_set_gpg_payload(msg, encpl, 'outlook', addpgp=True)
+            decode_base64(payload)
+            encpl = payload.get_payload()
+            # Check whether the payload is a fully enveloped PGP payload or
+            # just the unwrapped msg.gpg/asc file.
+            tmpmsg = message_from_string(encpl)
+            if tmpmsg.get_content_type() == 'multipart/encrypted':
+                msg_set_payload(msg, tmpmsg)
+            else:
+                msg_set_gpg_payload(msg, encpl, 'outlook', addpgp=True)
+            return
+        except:
+            # If one of the above operations fails badly, just ignore it.
+            # The unmodified message can either be handled or it will be
+            # moderated/frozen. The admin has to deal with it anyway.  This
+            # avoids a gazillion of conditionals and checks in the above
+            # code.
+            continue
 
 def decode_base64(msg):
     #
