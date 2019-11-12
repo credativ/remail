@@ -374,7 +374,7 @@ def msg_sanitize_outlook(msg):
     if not fname:
         return
 
-    if fname != 'msg.gpg' and fname != 'msg.asc':
+    if fname not in ['msg.gpg', 'msg.asc', 'GpgOL_MIME_structure.txt']:
         return
 
     encpl = payload[1].get_payload()
