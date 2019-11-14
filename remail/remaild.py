@@ -166,14 +166,18 @@ class remaild(object):
 
     def move_frozen(self, mailfile):
         try:
+            txt = 'Failed to process mail file %s\n' %(mailfile)
+            self.logger.log_warn(txt)
             fname = os.path.basename(mailfile)
-            fpath = os.path.join(self.config.mailfrozen, fname)
+            fpath = os.path.join(self.config.mailfrozen, 'new')
+            fpath = os.path.join(fpath, fname)
             if os.path.isfile(mailfile):
                 os.link(mailfile, fpath)
                 os.unlink(mailfile)
+                txt += 'Moved to %s\n' %fpath
+                self.logger.log_warn(txt)
         except:
             pass
-
 
     def process_msg(self, msg):
         # Check whether one of the lists will take it
@@ -209,8 +213,6 @@ class remaild(object):
                                                policy=self.policy)
             except Exception as ex:
                 self.move_frozen(mailfile)
-                txt = 'Failed to read mail file %s. Moved to frozen\n' %(mailfile)
-                self.logger.log_exception(txt, ex)
                 continue
 
             res = self.process_msg(msg)
@@ -219,9 +221,6 @@ class remaild(object):
                 os.unlink(mailfile)
             else:
                 self.move_frozen(mailfile)
-                txt = 'Failed to process mail file %s.' %(mailfile)
-                txt += ' Moved to frozen\n.'
-                self.logger.log_warn(txt)
 
     def process_mails(self):
         '''
