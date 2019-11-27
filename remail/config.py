@@ -263,7 +263,10 @@ list_defaults = {
 }
 
 class list_config(object):
-    def __init__(self, name, cfgdict):
+    def __init__(self, name, cfgdict, maincfgdict=None):
+        if maincfgdict is None:
+            maincfgdict = {}
+
         base = 'base.lists.%s' %name
         self.base = base
         self.name = name
@@ -283,8 +286,8 @@ class list_config(object):
         listid = cfgdict.get('listid', self.listaccount.addr.replace('@', '.'))
         self.listheaders = build_listheaders(self.listaccount.addr, listid)
 
-        self.smime = smime_config(self.listdir, None)
-        self.gpg = gpg_config(self.listdir, None)
+        self.smime = smime_config(self.listdir, maincfgdict.get('smime', None))
+        self.gpg = gpg_config(self.listdir, maincfgdict.get('gpg', None))
 
         self.admins = accounts_config(get_mandatory('admins', cfgdict, base),
                                       base)
@@ -334,7 +337,7 @@ class main_config(object):
         # Configure the lists
         self.lists = []
         for name, l in cfgdict.get('lists', {}).items():
-            self.lists.append(list_config(name, l))
+            self.lists.append(list_config(name, l, cfgdict))
 
     def show(self):
         show_attrs(self, main_defaults, 2)
