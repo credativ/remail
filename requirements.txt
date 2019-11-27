@@ -1,0 +1,5 @@
+flufl.bounce>=3.0
+M2Crypto>=0.35.2
+pyinotify>=0.9.6
+python-gnupg>=0.4.5
+ruamel.yaml>=0.16.5
