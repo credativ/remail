@@ -120,10 +120,10 @@ def list_account_config(cfgdict, base):
         raise RemailListConfigException(txt)
     return laccs.pop()
 
-def build_listheaders(mailaddr):
+def build_listheaders(mailaddr, listid):
     addr, domain = mailaddr.split('@')
     headers = {}
-    headers['List-Id'] = mailaddr
+    headers['List-Id'] = '<%s>' % listid
     headers['List-Owner'] = '<mailto:%s-owner@%s>' % (addr, domain)
     headers['List-Post'] = '<mailto:%s>' % mailaddr
     return headers
@@ -280,7 +280,8 @@ class list_config(object):
         self.listaccount = list_account_config(acc, base + '.listaccount')
 
         self.listaddrs = listaddrs(self.listaccount.addr)
-        self.listheaders = build_listheaders(self.listaccount.addr)
+        listid = cfgdict.get('listid', self.listaccount.addr.replace('@', '.'))
+        self.listheaders = build_listheaders(self.listaccount.addr, listid)
 
         self.smime = smime_config(self.listdir, None)
         self.gpg = gpg_config(self.listdir, None)

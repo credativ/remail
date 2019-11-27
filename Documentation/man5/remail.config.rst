@@ -257,6 +257,7 @@ The list base configuration for each list consists of the following items:
      listname:
       enabled:           True
       moderated:         True
+      listid:            ...
       archive:
         ...
       listaccount:
@@ -285,6 +286,11 @@ The list base items:
     or from one of the optional alias mail addresses which are associated
     with a subscriber. Mails from non-subscribers are not delivered to the
     list, they are delivered to the list administrator
+
+  listid:
+
+    Optional item to override the default list-id with a custom value.
+    Default: list address with the "@" replaced by a period.
 
 The archive section:
 """"""""""""""""""""
