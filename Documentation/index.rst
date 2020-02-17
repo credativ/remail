@@ -28,6 +28,16 @@ Describes the licensing rules for the remail source code.
 
    license-rules.rst
 
+Contribute
+----------
+
+Contribution notes
+
+.. toctree::
+   :maxdepth: 3
+
+   contribute.rst
+
   
 Installation
 ------------
