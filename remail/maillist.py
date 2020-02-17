@@ -18,8 +18,9 @@ from email.utils import make_msgid, formatdate
 from email.policy import EmailPolicy
 from flufl.bounce import all_failures
 
+from ruamel.yaml import YAML
+
 import mailbox
-import yaml
 import os
 
 class maillist(object):
@@ -315,7 +316,7 @@ class maillist_checker(object):
     def __init__(self, configfile, logger):
         self.logger = logger
         try:
-            cfgdict = yaml.load(open(configfile))
+            cfgdict = YAML().load(open(configfile))
         except Exception as ex:
             txt = 'Failed to load list configfile %s' %configfile
             logger.log_exception(txt, ex)
