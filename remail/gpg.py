@@ -89,9 +89,14 @@ class gpg_crypt(object):
     def do_encrypt(self, payload, fingerprints):
         ''' Common encryption helper'''
 
+        if self.config.sign:
+            signit = self.account.fingerprint
+        else:
+            signit = None
+
         enc = self.gpg.encrypt(payload, fingerprints, armor=self.config.armor,
                                always_trust=self.config.always_trust,
-                               sign=self.config.sign)
+                               sign=signit)
         if enc.ok:
             return str(enc)
         raise RemailGPGException('Encryption fail: %s' % enc.status)
