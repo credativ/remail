@@ -161,7 +161,7 @@ class maillist(object):
                 if acc.enabled:
                     acc.enabled = False
                     txt = 'Freezing account due to permanent failure %s\n' % addr
-                    self.logger.log_warn('txt')
+                    self.logger.log_warn(txt)
                 self.tracking.freeze_account(acc)
             else:
                 txt = 'Trying to freeze non existing account %s.\n' % addr
