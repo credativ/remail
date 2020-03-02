@@ -31,6 +31,11 @@ class EventHandler(pyinotify.ProcessEvent):
         self.mailer.queue_newmail(event.pathname)
         pass
 
+    def process_IN_MOVED_TO(self, event):
+        self.mailer.queue_newmail(event.pathname)
+        pass
+
+
 class remaild(object):
     """
     The remail daemon.
@@ -132,7 +137,7 @@ class remaild(object):
         wm = pyinotify.WatchManager()
         self.inotifier = pyinotify.AsyncNotifier(wm, EventHandler(self))
         ndir = pathlib.Path(self.config.maildir) / 'new'
-        wm.add_watch(str(ndir.resolve()), pyinotify.IN_CREATE)
+        wm.add_watch(str(ndir.resolve()), pyinotify.IN_CREATE | pyinotify.IN_MOVED_TO)
 
     def stop_inotifier(self):
         '''
