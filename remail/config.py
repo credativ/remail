@@ -189,6 +189,7 @@ class archive_config(object):
             print('%*s%-40s: %s' % (indent, '', 'plain_list', self.m_list))
 
 smime_defaults = {
+    'enabled'    : True,
     'verify'     : True,
     'sign'       : True,
 }

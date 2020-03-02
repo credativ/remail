@@ -13,6 +13,8 @@ use_smtp: True
 
 # S/MIME
 smime:
+ # Enable S/MIME
+ enabled:       True
  # Verify CA certs. Only disable for troubleshooting
  verify:        True
 

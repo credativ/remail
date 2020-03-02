@@ -186,8 +186,13 @@ S/MIME options:
   .. code-block:: yaml
 
      smime:
+      enabled:             True
       verify:              True
       sign:                True
+
+  enabled:
+   Enable S/MIME processing. If this option is set to False then no attempts
+   are made to process S/MIME mails or keys.
 
   verify:
 

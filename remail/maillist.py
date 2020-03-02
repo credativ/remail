@@ -35,7 +35,9 @@ class maillist(object):
         self.enabled = listcfg.enabled
         self.use_smtp = use_smtp
 
-        self.smime = smime_crypt(self.config.smime, self.config.listaccount)
+        self.smime = None
+        if self.config.smime.enabled:
+            self.smime = smime_crypt(self.config.smime, self.config.listaccount)
         self.gpg = gpg_crypt(self.config.gpg, self.config.listaccount)
 
         self.tracking = account_tracking(self.config.tracking, logger)
@@ -72,7 +74,7 @@ class maillist(object):
         Encrypt plain text message for the account
         '''
         msg = msg_from_string(msg_plain.as_string())
-        if account.use_smime:
+        if self.smime and account.use_smime:
             self.smime.encrypt(msg, account)
         else:
             self.gpg.encrypt(msg, account)
@@ -143,7 +145,9 @@ class maillist(object):
         '''
         msg_sanitize_incoming(msg)
 
-        msg_plain = self.smime.decrypt(msg)
+        msg_plain = None
+        if self.smime:
+           msg_plain = self.smime.decrypt(msg)
         if not msg_plain:
             msg_plain = self.gpg.decrypt(msg)
         return msg_plain
@@ -303,10 +307,10 @@ class maillist(object):
         for account in self.config.subscribers.values():
             if not account.enabled:
                 continue
-            if not account.use_smime:
-                self.gpg.check_key(account)
-            else:
+            if account.use_smime and self.smime:
                 self.smime.check_cert(account)
+            else:
+                self.gpg.check_key(account)
 
 class maillist_checker(object):
     '''
