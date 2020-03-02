@@ -52,7 +52,7 @@ class account_config(object):
         # Do at least minimal checks for a valid email address
         if not email_addr_valid(addr):
             txt = 'Invalid email address: %s' % base
-            raise RemailListConfig_Exception(txt)
+            raise RemailListConfigException(txt)
 
         self.addr = addr
         self.name = get_mandatory('name', cfgdict, base)
