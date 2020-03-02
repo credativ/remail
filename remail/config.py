@@ -51,7 +51,7 @@ class account_config(object):
         base = base + '.addr'
         # Do at least minimal checks for a valid email address
         if not email_addr_valid(addr):
-            txt = 'Invalid email address: %s' % base
+            txt = 'Invalid email address: %s' % addr
             raise RemailListConfigException(txt)
 
         self.addr = addr
