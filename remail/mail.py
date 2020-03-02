@@ -106,7 +106,7 @@ def send_mail(msg_out, account, mfrom, sender, listheaders, use_smtp):
         msg_deliver(msg_out, account, mfrom, sender, use_smtp)
 
 # Minimal check for a valid email address
-re_mail = re.compile('^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$')
+re_mail = re.compile('^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$')
 
 def email_addr_valid(addr):
     return re_mail.match(addr)
