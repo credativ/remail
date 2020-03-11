@@ -402,6 +402,56 @@ def msg_sanitize_outlook(msg):
             # code.
             continue
 
+def msg_handle_multimix(msg):
+    '''
+    Magic format used by dwmw2's devolution plugin to prevent
+    exchange from wreckaging mail. It's kinda valid, but sigh...
+
+    Multipart mixed message with:
+     - empty text/plain
+     - application/pgp-encrypted
+     - application/octed-stream
+
+    Make it look like a sane PGP application/encrypted mail
+    '''
+    ct = msg.get_content_type()
+    if ct != 'multipart/mixed':
+        return
+
+    fnames = ['msg.asc', 'encrypted.asc']
+    gpgpl = 0
+    otherpl = []
+
+    payloads = msg.get_payload()
+    for payload in payloads:
+        try:
+            ct = payload.get_content_type()
+            print(ct)
+            if ct == 'application/pgp-encrypted':
+                gpgpl += 1
+                continue
+            elif ct == 'application/octet-stream':
+                fname = payload.get_filename(None)
+                if gpgpl == 1 and fname in fnames:
+                    gpgpl += 1
+                    continue
+            # None of the above. Mark it as other
+            otherpl.append(payload)
+        except:
+            # Ignore fails here. This is all best effort
+            # guesswork.
+            pass
+
+    if gpgpl != 2:
+        return
+
+    # Remove the irrelevant payload parts
+    for pl in otherpl:
+        payloads.remove(pl)
+    # Fixup the message type so decrypt knows what to do with it
+    msg.set_type('multipart/encrypted')
+    msg.set_param('protocol', 'application/pgp-encrypted')
+
 def decode_base64(msg):
     #
     # Decode base64 encoded text/plain sections
@@ -435,6 +485,9 @@ def msg_sanitize_incoming(msg):
     '''
     # Strip html multipart first
     msg_strip_html(msg)
+
+    # Handle multipart/mixed
+    msg_handle_multimix(msg)
 
     # Sanitize outlook crappola
     msg_sanitize_outlook(msg)
