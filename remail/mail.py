@@ -367,7 +367,7 @@ def msg_sanitize_outlook(msg):
     # Try to find the payload part which actually contains the
     # magically wrapped outlook GPG data.
     # Two variants:
-    # 1) msg.asc or msc.gpg provided as a plain attachement
+    # 1) random filenames provided as a plain attachement
     #    without PGP envelope
     # 2) GpgOL_MIME_structure.txt contains a fully enveloped
     #   PGP payload with the proper headers.
@@ -377,8 +377,11 @@ def msg_sanitize_outlook(msg):
             if payload.get_content_type() != 'application/octet-stream':
                 continue
 
+            fnames = ['msg.gpg', 'msg.asc', 'encrypted.asc',
+                      'GpgOL_MIME_structure.txt']
+
             fname = payload.get_filename(None)
-            if fname not in ['msg.gpg', 'msg.asc', 'GpgOL_MIME_structure.txt']:
+            if fname not in fnames:
                 continue
 
             decode_base64(payload)
