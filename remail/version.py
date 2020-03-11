@@ -2,4 +2,4 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # Copyright Thomas Gleixner <tglx@linutronix.de>
 
-__version__ = '0.8'
+__version__ = '0.9'
