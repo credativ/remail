@@ -175,7 +175,7 @@ class gpg_crypt(object):
         msg_set_payload(msg, pl)
         return msg
 
-    def decrypt(self, msg):
+    def decrypt(self, msg, sinfo):
         '''
         Try to handle received mail with PGP. Return decoded or plain mail
         '''

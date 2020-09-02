@@ -7,7 +7,7 @@
 from remail.mail import msg_set_header, msg_force_msg_id, send_mail
 from remail.mail import msg_sanitize_incoming, msg_is_autoreply
 from remail.mail import get_raw_email_addr, decode_addrs
-from remail.mail import msg_from_string
+from remail.mail import msg_from_string, sender_info
 
 from remail.smime import smime_crypt, RemailSmimeException
 from remail.gpg import gpg_crypt, RemailGPGException
@@ -138,7 +138,7 @@ class maillist(object):
         mbox.add(msg)
         mbox.close()
 
-    def decrypt_mail(self, msg):
+    def decrypt_mail(self, msg, sinfo):
         '''
         Decrypt mail after sanitizing it from HTML and outlook magic
         and decoding base64 transport.
@@ -147,9 +147,9 @@ class maillist(object):
 
         msg_plain = None
         if self.smime:
-           msg_plain = self.smime.decrypt(msg)
+           msg_plain = self.smime.decrypt(msg, sinfo)
         if not msg_plain:
-            msg_plain = self.gpg.decrypt(msg)
+            msg_plain = self.gpg.decrypt(msg, sinfo)
         return msg_plain
 
     def disable_subscribers(self, addrs, msgid):
@@ -180,7 +180,11 @@ class maillist(object):
         subj = prefix + msg['Subject']
         msg_set_header(msg, 'Subject', subj)
 
-    def moderate(self, msg, dest):
+    def is_subscribed(self, mfrom):
+        r = self.config.subscribers.has_account(mfrom)
+        return r or self.config.admins.has_account(mfrom)
+
+    def moderate(self, msg, dest, mfrom):
         '''
         If the list is moderated make sure that the sender of a mail
         is subscribed or an administrator. This checks also aliases.
@@ -188,10 +192,7 @@ class maillist(object):
         if not self.config.moderated:
             return False
 
-        mfrom = get_raw_email_addr(msg.get('From'))
-        r = self.config.subscribers.has_account(mfrom)
-        r = r or self.config.admins.has_account(mfrom)
-        if not r:
+        if not self.is_subscribed(mfrom):
             self.modsubject(msg, '[MODERATED] ')
             dest.toadmins = True
             dest.accounts = self.config.admins
@@ -219,7 +220,7 @@ class maillist(object):
             dest.toadmins = True
             dest.accounts = self.config.admins
 
-    def mangle_from(self, msg):
+    def mangle_from(self, msg, mfrom):
         '''
         Build 'From' string so the original 'From' is 'visible':
         From: $LISTNAME for $ORIGINAL_FROM <$LISTADDRESS>
@@ -227,23 +228,25 @@ class maillist(object):
         If $ORIGINAL_FROM does not contain a name, mangle the email
         address by replacing @ with _at_
         '''
-        mfrom = msg.get('From').split('<')[0].replace('@', '_at_').strip()
         return '%s for %s <%s>' % (self.config.name, mfrom,
                                    self.config.listaddrs.post)
 
     def do_process_mail(self, msg, dest):
+
+        msgid = msg.get('Message-Id', '<No ID>')
+        msgto = msg.get('To')
+        msgfrom = get_raw_email_addr(msg.get('From'))
+        sinfo = sender_info(msg)
+
         # Archive the incoming mail
         self.archive_mail(msg, incoming=True)
         # Destination was already established. Check for bounces first
         self.check_bounces(msg, dest)
         # Check for moderation
-        self.moderate(msg, dest)
-
-        msgid = msg.get('Message-Id', '<No ID>')
-        msgto = msg.get('To')
+        self.moderate(msg, dest, msgfrom)
 
         try:
-            msg_plain = self.decrypt_mail(msg)
+            msg_plain = self.decrypt_mail(msg, sinfo)
         except Exception as ex:
             txt = 'Failed to decrypt incoming %s to %s\n' %(msgid, msgto)
             self.logger.log_exception(txt, ex)
@@ -251,7 +254,12 @@ class maillist(object):
 
         self.archive_mail(msg_plain, admin=dest.toadmin)
 
-        mfrom = self.mangle_from(msg)
+        mfrom = self.mangle_from(msg, msgfrom)
+        # Save sender information in the outgoing message?
+        if self.config.attach_sender_info:
+            # Only do so for non-subscribers
+            if not self.is_subscribed(msgfrom):
+                sinfo.store_in_msg(msg_plain)
 
         for account in dest.accounts.values():
             if not account.enabled:

@@ -20,6 +20,41 @@ import time
 import sys
 import re
 
+class sender_info(object):
+    def __init__(self, msg):
+        self.mfrom = msg.get('From')
+        self.info = None
+
+    def get_info(self):
+        info = 'Sent from: %s\n' %self.mfrom
+        if self.info:
+            info += self.info.get_info()
+        else:
+            info += 'No GPG/SMIME info available'
+        return info
+
+    def store_in_msg(self, msg):
+        # Convert the message into a multipart/mixed message
+        ct = msg.get_content_type()
+        if ct != 'multipart/mixed':
+            msg.make_mixed()
+
+        # Attach the sender information as plain/text
+        msg.add_attachment(self.get_info())
+
+        if not self.info:
+            return
+
+        # Check whether the GPG key or the S/MIME cert is
+        # available and attach it.
+        fname, data, maintype, subtype = self.info.get_file()
+        if fname:
+            if maintype != 'plain':
+                msg.add_attachment(data, filename=fname, maintype=maintype,
+                                   subtype=subtype)
+            else:
+                msg.add_attachment(data, filename=fname)
+
 def sanitize_headers(msg):
     '''
     Sanitize headers by keeping only the ones which are interesting

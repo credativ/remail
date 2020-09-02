@@ -158,7 +158,7 @@ class smime_crypt(object):
 
         return None
 
-    def decrypt(self, msg):
+    def decrypt(self, msg, sinfo):
         try:
             envto = msg.get('To', None)
             msgid = msg.get('Message-Id', None)

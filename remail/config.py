@@ -261,6 +261,7 @@ class archive_options(object):
 list_defaults = {
     'enabled'             : False,
     'moderated'           : False,
+    'attach_sender_info'  : False,
 }
 
 class list_config(object):

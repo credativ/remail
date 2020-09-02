@@ -260,9 +260,10 @@ The list base configuration for each list consists of the following items:
   .. code-block:: yaml
 
      listname:
-      enabled:           True
-      moderated:         True
-      listid:            ...
+      enabled:            True
+      moderated:          True
+      attach_sender_info: False
+      listid:             ...
       archive:
         ...
       listaccount:
@@ -276,8 +277,9 @@ The list base items:
   .. code-block:: yaml
 
      listname:
-      enabled:           True
-      moderated:         True
+      enabled:            True
+      moderated:          True
+      attach_sender_info: False
 
   enabled:
 
@@ -291,6 +293,16 @@ The list base items:
     or from one of the optional alias mail addresses which are associated
     with a subscriber. Mails from non-subscribers are not delivered to the
     list, they are delivered to the list administrator
+
+  attach_sender_info:
+
+    Collects information about the sender, email-address, encryption method
+    and if the mail is signed the GPG key or S/MIME certificate contained
+    in the signature. This information is attached to the original mail as
+    two seperate attachments (text info and key/certificate) if this is
+    enabled and the sender is not subscribed to the list. This is for open
+    lists and especially contact points so that the subscribers are able
+    to contact the sender.
 
   listid:
 
