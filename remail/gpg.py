@@ -7,6 +7,7 @@
 from remail.mail import msg_set_payload, msg_set_header
 from remail.mail import msg_get_payload_as_string
 from remail.mail import msg_from_string, msg_set_gpg_payload
+from remail.mail import get_raw_email_addr
 
 import hashlib
 import string
@@ -19,6 +20,40 @@ class RemailGPGException(Exception):
 
 class RemailGPGKeyException(Exception):
     pass
+
+class gpg_sender_info(object):
+    def __init__(self, gpg, result):
+        self.gpg = gpg
+        self.results = [result]
+
+    def append(self, result):
+        self.results.append(result)
+
+    def get_info(self):
+        info = ''
+        for result in self.results:
+            if result.signature_id:
+                info += 'Username:     %s\n' %result.username
+                info += 'Key Id:       %s\n' %result.key_id
+                info += 'Signature Id: %s\n' %result.signature_id
+                info += 'Fingerprint:  %s\n' %result.fingerprint
+
+        if info == '':
+            info = 'No further information available\n'
+        return 'GPG\n' + info
+
+    def get_file(self):
+        for result in self.results:
+            if result.fingerprint:
+                try:
+                    fname = get_raw_email_addr(result.username)
+                    fname += '.gpg'
+                    # Return the ASCII armored public key
+                    key = self.gpg.export_keys([result.fingerprint])
+                    return fname, key, 'plain', 'text'
+                except:
+                    pass
+        return None, None, None, None
 
 class gpg_crypt(object):
     def __init__(self, gpgcfg, account, checkkey=True):
@@ -125,7 +160,13 @@ class gpg_crypt(object):
         msg_set_gpg_payload(msg, encpl, account.addr)
         return msg
 
-    def gpg_decrypt_plain(self, msg):
+    def set_sender_info(self, sinfo, result):
+        if sinfo.info:
+            sinfo.info.update(result)
+        else:
+            sinfo.info = gpg_sender_info(self.gpg, result)
+
+    def gpg_decrypt_plain(self, msg, sinfo):
         '''
         Try to decrypt inline plain/text
 
@@ -138,6 +179,8 @@ class gpg_crypt(object):
             msg_set_payload(msg, msg_from_string(str(plain)))
             if plain.signature_id:
                 msg_set_header(msg, 'Signature-Id', plain.username)
+            self.set_sender_info(sinfo, plain)
+
         elif plain.status != 'no data was provided':
             # Check for an empty return path which is a good indicator
             # for a mail server message.
@@ -146,7 +189,7 @@ class gpg_crypt(object):
                 raise RemailGPGException('Decryption failed: %s' % plain.status)
         return msg
 
-    def gpg_decrypt_enveloped(self, msg):
+    def gpg_decrypt_enveloped(self, msg, sinfo):
         '''
         Try to decrypt an enveloped mail
         '''
@@ -171,6 +214,8 @@ class gpg_crypt(object):
         if plain.signature_id:
             msg_set_header(msg, 'Signature-Id', plain.username)
 
+        self.set_sender_info(sinfo, plain)
+
         pl = msg_from_string(str(plain))
         msg_set_payload(msg, pl)
         return msg
@@ -183,10 +228,10 @@ class gpg_crypt(object):
         ct = msg.get_content_type()
 
         if ct == 'text/plain':
-            return self.gpg_decrypt_plain(msgout)
+            return self.gpg_decrypt_plain(msgout, sinfo)
 
         elif ct == 'multipart/encrypted':
-            return self.gpg_decrypt_enveloped(msgout)
+            return self.gpg_decrypt_enveloped(msgout, sinfo)
 
         # There might be inline PGP with no mentioning in the content type
         if not msg.is_multipart():
@@ -195,7 +240,7 @@ class gpg_crypt(object):
         payloads = msgout.get_payload()
         payldecr = []
         for pl in payloads:
-            pl = self.decrypt(pl)
+            pl = self.decrypt(pl, sinfo)
             payldecr.append(pl)
         msgout.set_payload(payldecr)
         return msgout
