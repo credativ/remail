@@ -106,16 +106,15 @@ class smime_crypt(object):
         '''
         mfrom = get_raw_email_addr(msg['From'])
 
-        crt = os.path.join(self.config.list_certs, mfrom + '.crt')
-        x509 = X509.load_cert(crt)
-        sk = X509.X509_Stack()
-        sk.push(x509)
+        p7_bio = BIO.MemoryBuffer(msg.as_bytes())
+        p7, data = SMIME.smime_load_pkcs7_bio(p7_bio)
+
+        sk = p7.get0_signers(X509.X509_Stack())
+
         self.smime.set_x509_stack(sk)
         store = X509.X509_Store()
         store.load_info(self.config.ca_certs)
         self.smime.set_x509_store(store)
-        p7_bio = BIO.MemoryBuffer(msg.as_bytes())
-        p7, data = SMIME.smime_load_pkcs7_bio(p7_bio)
 
         msgout = self.smime.verify(p7, data, flags=self.ca_verify)
         msg_set_header(msg, 'Signature-Id', mfrom)
