@@ -15,6 +15,25 @@ import os
 class RemailSmimeException(Exception):
     pass
 
+class smime_sender_info(object):
+    def __init__(self, cert):
+        self.subject = str(cert.get_subject())
+        self.pem = cert.as_pem()
+
+    def get_info(self):
+        if self.subject:
+            info = '%s\n' % self.subject
+        else:
+            info = 'No further information available\n'
+        return 'S/MIME\n' + info
+
+    def get_file(self):
+        if self.pem:
+            fname = self.subject.replace('/emailAddress=','').strip()
+            fname += '.crt'
+            return fname, self.pem, 'application', 'octet-stream'
+        return None, None, None, None
+
 class smime_crypt(object):
     def __init__(self, smime_cfg, account, checkkey=True):
         self.config = smime_cfg
@@ -100,7 +119,7 @@ class smime_crypt(object):
             return self.smime_is_multipart_signed(msg)
         return False
 
-    def smime_verify(self, msg):
+    def smime_verify(self, msg, sinfo):
         '''
         Verify SMIME signed message and return the payload as email.message
         '''
@@ -110,6 +129,7 @@ class smime_crypt(object):
         p7, data = SMIME.smime_load_pkcs7_bio(p7_bio)
 
         sk = p7.get0_signers(X509.X509_Stack())
+        sinfo.info = smime_sender_info(sk[0])
 
         self.smime.set_x509_stack(sk)
         store = X509.X509_Store()
@@ -120,7 +140,7 @@ class smime_crypt(object):
         msg_set_header(msg, 'Signature-Id', mfrom)
         return msg_from_bytes(msgout)
 
-    def smime_decrypt(self, msg):
+    def smime_decrypt(self, msg, sinfo):
         '''
         Decrypt SMIME message and replace the payload of the original message
         '''
@@ -132,27 +152,27 @@ class smime_crypt(object):
         # If the message is signed as well get the content
         if self.smime_must_verify(msg_plain):
             msg_set_payload(msg, msg_plain)
-            msg_plain = self.smime_verify(msg)
+            msg_plain = self.smime_verify(msg, sinfo)
 
         msg_set_payload(msg, msg_plain)
 
-    def do_decrypt(self, msg):
+    def do_decrypt(self, msg, sinfo):
         '''
         Try to handle received mail with S/MIME. Return the decoded mail or None
         '''
         if self.smime_is_multipart_signed(msg):
-            payload = self.smime_verify(msg)
+            payload = self.smime_verify(msg, sinfo)
             msg_set_payload(msg, payload)
 
         ct = msg.get_content_type()
         if ct == 'application/pkcs7-mime' or ct == 'application/x-pkcs7-mime':
             msgout = msg_from_string(msg.as_string())
-            self.smime_decrypt(msgout)
+            self.smime_decrypt(msgout, sinfo)
             return msgout
 
         elif self.smime_must_verify(msg):
             msgout = msg_from_string(msg.as_string())
-            payload = self.smime_verify(msgout)
+            payload = self.smime_verify(msgout, sinfo)
             msg_set_payload(msgout, payload)
             return msgout
 
@@ -162,7 +182,12 @@ class smime_crypt(object):
         try:
             envto = msg.get('To', None)
             msgid = msg.get('Message-Id', None)
-            return self.do_decrypt(msg)
+            res = self.do_decrypt(msg, sinfo)
+            # If the message was S/MIME encrypted but not signed
+            # set an empty S/MIME sender info
+            if res and not sinfo.info:
+                sinfo.info = smime_sender_info(None)
+            return res
         except SMIME.PKCS7_Error as ex:
             # SMIME Exceptions are undecodable
             txt = 'PKCS7 error when decrypting message '
