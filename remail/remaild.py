@@ -184,7 +184,7 @@ class remaild(object):
         except:
             pass
 
-    def process_msg(self, msg):
+    def process_msg(self, msg, mailfile):
         # Check whether one of the lists will take it
         for ml in self.mailinglists:
             if not ml.enabled:
@@ -220,7 +220,7 @@ class remaild(object):
                 self.move_frozen(mailfile)
                 continue
 
-            res = self.process_msg(msg)
+            res = self.process_msg(msg, mailfile)
 
             if res == 0:
                 os.unlink(mailfile)
@@ -379,7 +379,7 @@ class remaild(object):
 
         policy = EmailPolicy(utf8=True)
         msg = message_from_file(sys.stdin, policy=policy)
-        return self.process_msg(msg)
+        return self.process_msg(msg, 'pipe input')
 
     # The runner
     def run(self):
