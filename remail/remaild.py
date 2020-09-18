@@ -370,12 +370,15 @@ class remaild(object):
         return self.should_stop()
 
     # The pipe handling interface
-    def handle_pipe(self):
+    def handle_pipe(self, cfgupdate):
         self._should_reload = True
         self.reconfigure()
 
         if not self.enabled:
             return 1
+
+        if cfgupdate:
+            return 0
 
         policy = EmailPolicy(utf8=True)
         msg = message_from_file(sys.stdin, policy=policy)

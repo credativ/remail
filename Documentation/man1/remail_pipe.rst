@@ -24,6 +24,14 @@ Options
 -h, --help
    Show this help message and exit
 
+-c, --cfgupdate
+   Read the configuration update and do not process mail from stdin. That
+   allows to send out welcome mails after a list configuration file was
+   updated. Otherwise the welcome mails are delayed until actual mail
+   delivery happens. The update and welcome mail processing is serialized
+   via the lock file in the working directory; no external serialization
+   against a concurrent mail delivery required.
+
 -s syslog, --syslog
    Use syslog for logging. Default is stderr
 
@@ -59,7 +67,7 @@ Exit codes
 .. list-table::
 
    * - 0
-     - Mail was successfully delivered
+     - Mail was successfully delivered or config update was successful
    * - 1
      - No enabled mailinglist found for delivery
    * - 2
