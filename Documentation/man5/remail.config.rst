@@ -384,6 +384,7 @@ The list administrators section:
        fingerprint:      40CHARACTERFINGERPRINT
        enabled:          True
        use_smime:        False
+       use_transport:    False
        gpg_plain:        False
       admin2@other.domain:
 
@@ -404,6 +405,21 @@ The list administrators section:
 
      Send S/MIME encrypted mail to the admin if True. Otherwise use
      PGP. Optional, defaults to False.
+
+   use_transport:
+
+     Do not bother with encryption and send plain text messages, i.e. rely
+     on the SMTP transport layer encryption. None of the admin messages are
+     really confidential.
+
+     This may also be a valid option for some subscribers, for example in
+     scenarios where the mail provider manages the subscriber key (sic!)
+     and does server side decryption anyway, or when mail is delivered to
+     an inbox stored on the same infrastructure as remail itself.
+     Not recommended for most cases.
+
+     Optional, defaults to False. Note, this is mutually exclusive with
+     the 'use_smime' option.
 
    gpg_plain:
 

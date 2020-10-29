@@ -40,10 +40,11 @@ def show_attrs(obj, attrdict, indent):
         print('%*s%-40s: %s' %(indent, '', attr, getattr(obj, attr)))
 
 account_defaults = {
-    'enabled'     : False,
-    'fingerprint' : None,
-    'use_smime'   : False,
-    'gpg_plain'   : False,
+    'enabled'       : False,
+    'fingerprint'   : None,
+    'use_smime'     : False,
+    'use_transport' : False,
+    'gpg_plain'     : False,
 }
 
 class account_config(object):
@@ -57,6 +58,11 @@ class account_config(object):
         self.addr = addr
         self.name = get_mandatory('name', cfgdict, base)
         set_defaults(self, account_defaults, cfgdict)
+
+        # Valdiate transport options to be coherent
+        if self.use_smime and self.use_transport:
+            txt = 'use_smime and use_transport cannot both be set for %s' % addr
+            raise RemailListConfigException(txt)
 
         # Get the optional aliases to allow sending from
         # different accounts when the list is moderated

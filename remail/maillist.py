@@ -71,12 +71,17 @@ class maillist(object):
 
     def encrypt(self, msg_plain, account):
         '''
-        Encrypt plain text message for the account
+        Encrypt plain text message for the account or return the plain text
+        message when the account has the 'use_transport' option set. The
+        latter is used for delivery to admin accounts on the machine or the
+        protected network and for transport based security to mail providers
+        like gmail which manage the recipients S/MIME key and do server
+        side decryption anyway (shudder).
         '''
         msg = msg_from_string(msg_plain.as_string())
         if self.smime and account.use_smime:
             self.smime.encrypt(msg, account)
-        else:
+        elif not account.use_transport:
             self.gpg.encrypt(msg, account)
         return msg
 
@@ -317,7 +322,7 @@ class maillist(object):
                 continue
             if account.use_smime and self.smime:
                 self.smime.check_cert(account)
-            else:
+            elif not account.use_transport:
                 self.gpg.check_key(account)
 
 class maillist_checker(object):
@@ -368,9 +373,9 @@ class maillist_checker(object):
             if not account.enabled:
                 continue
             try:
-                if not account.use_smime:
-                    gpg.check_key(account)
-                else:
+                if account.use_smime:
                     smime.check_cert(account)
+                elif not account.use_transport:
+                    gpg.check_key(account)
             except Exception as ex:
                 self.logger.log(str(ex) + '\n')

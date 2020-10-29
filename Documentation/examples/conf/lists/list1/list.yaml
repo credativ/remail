@@ -10,7 +10,9 @@ subscribers:
  #   name: Real name of the subscriber
  #   enabled: Subscriber is enabled (if omitted defaults to False)
  #   use_smime: True/False (Use S/MIME for encryption. If omitted defaults to False)
- #   fingerprint: GPG fingerprint (Not required when use_smime == True)
+ #   use_transport: True/False (SMTP transport layer encryption only. If omitted defaults to False.
+ #                              Conflicts with use_smime == True)
+ #   fingerprint: GPG fingerprint (Not required when use_smime == True or use_transport == True)
  #   gpg_plain: Plain text inline GPG encryption (If omitted defaults to False)
  #   aliases: List of alias addresses which are valid for posting (moderated list)
  #
