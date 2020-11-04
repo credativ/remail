@@ -233,6 +233,7 @@ class maillist(object):
         If $ORIGINAL_FROM does not contain a name, mangle the email
         address by replacing @ with _at_
         '''
+        mfrom = mfrom.replace('@','_at_')
         return '%s for %s <%s>' % (self.config.name, mfrom,
                                    self.config.listaddrs.post)
 
